@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style/main.css">
+</head>
+
+<body>
+  <div id="navbar"></div>
+  <div id="container"></div>
+
+
+  <script type="module">
+      import Header from "./components/Header.js";
+     let navbar = document.querySelector('#navbar');
+     navbar.innerHTML = Header();
+
+     let input_box = document.querySelector('#search-input');
+     let profileImg = document.querySelector('#profile-img');
+     input_box.addEventListener('keypress', () => {
+         getData(event);
+     })
+
+     const getData = async (event) => {
+         try{
+            if(event.code === "Enter"){
+            let input = input_box.value;
+            let res = await fetch(`https://api.github.com/users/${input}/repos`)
+            let data = await res.json();
+            localStorage.setItem("repoData",JSON.stringify(data));
+            displayData(data);
+        }
+         }catch(error){
+       console.log("error",error)
+         }
+      
+     }
+    
+let repoData = JSON.parse(localStorage.getItem("repoData"));
+displayData(repoData)
+     function displayData(data){
+      document.querySelector("#container").innerHTML = null
+       data.map(function({full_name,visibility,name,html_url}) {
+        let div = createTag("div");
+        let repoName = createTag("h3");
+        repoName.innerText = name;
+        let visi = createTag("p");
+        visi.innerText = `Visibility: ${visibility}`;
+        let button = createTag("button")
+        button.innerText = "See More";
+        button.addEventListener("click",function(){
+          window.location.href = html_url;
+        })
+        div.append(repoName,visi,button);
+        document.querySelector("#container").append(div);
+       })
+       profileImg.src =  data[0].owner.avatar_url
+     }
+   
+     function createTag(tag){
+       return document.createElement(tag);
+     }
+ 
+  </script>
+</body>
+</html>
